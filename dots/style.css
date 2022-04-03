@@ -1,0 +1,10 @@
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  /* border: solid red 1px; */
+}
