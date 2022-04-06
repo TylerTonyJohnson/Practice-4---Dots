@@ -1,4 +1,5 @@
 // Imports
+import { BufferAttribute } from 'three';
 import { 
   BufferGeometry, 
   Color, 
@@ -22,7 +23,12 @@ let mouseX = 0, mouseY = 0;
 let viewWidth = window.innerWidth;
 let viewHeight = window.innerHeight;
 
+const sprite= new TextureLoader().load(
+  "https://blog.fastforwardlabs.com/images/2018/02/circle_aa-1518730700478.png"
+)
+
 init();
+addDot( 0, 0 );
 animate();
 
 function init() {
@@ -35,42 +41,18 @@ function init() {
   );
   camera.position.z = 1000;
 
-  // Create scene
-  scene = new Scene();
-  scene.fog = new FogExp2( 0x000000, 0.001 );
-  // scene.background = new Color( 0x666666 );
+  createScene()
 
-  // Create geometry
-  let geometry = new BufferGeometry();
-
-  let vertices = [];
-
-  const sprite= new TextureLoader().load(
-    "https://blog.fastforwardlabs.com/images/2018/02/circle_aa-1518730700478.png"
-  )
-
-  for (let i = 0; i < 1000; i++) {
-    const x = 2000 * Math.random() - 1000;
-    const y = 2000 * Math.random() - 1000;
-    const z = 2000 * Math.random() - 1000;
-
-    vertices.push( x, y, z );
-  }
-
-  geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ));
-
+  // Load material
   material = new PointsMaterial( { 
     color: 0xAAAAAA,
-    size: 8,
-    sizeAttenuation: true,
+    size: 20,
+    sizeAttenuation: false,
     map: sprite,
     transparent: true,
     alphaTest: 0.5
   } );
   material.color.setHSL(1.0, 0.3, 0.7);
-
-  const points = new Points( geometry, material );
-  scene.add( points );
 
   // Create renderer
   renderer = new WebGLRenderer();
@@ -81,6 +63,9 @@ function init() {
   // Dom setup
   document.body.style.touchAction = "none";
   document.body.addEventListener( 'pointermove', onPointerMove );
+  document.body.addEventListener( 'click', onClick );
+  document.body.addEventListener( 'contextmenu', event => event.preventDefault() )
+  document.body.addEventListener( 'contextmenu', clearScene );
   window.addEventListener( "resize", onWindowResize );
 
 }
@@ -96,12 +81,12 @@ function render() {
 
   const time = Date.now() * 0.00005;
 
-  camera.position.x += ( mouseX - camera.position.x ) * 0.05;
-  camera.position.y += ( mouseY - camera.position.y ) * 0.05;
+  // camera.position.x += ( 2 * mouseX - camera.position.x ) * 0.05;
+  // camera.position.y += ( 2 * mouseY - camera.position.y ) * 0.05;
 
-  camera.lookAt( scene.position );
-  const h = ( 360 * ( 1.0 + time) % 360) / 36;
-  material.color.setHSL( h, 0.5, 0.5);
+  // camera.lookAt( scene.position );
+  // const h = ( 360 * ( 1.0 + time) % 360) / 36;
+  // material.color.setHSL( h, 0.5, 0.5);
 
   renderer.render( scene, camera );
 }
@@ -114,6 +99,12 @@ function onPointerMove( event ) {
   mouseY = event.clientY - viewHeight / 2;
 }
 
+function onClick ( event ) {
+  const x = event.clientX - viewWidth / 2;
+  const y = event.clientY - viewHeight / 2;
+  addDot(x, y);
+}
+
 // Window resize
 function onWindowResize() {
   viewWidth = window.innerWidth;
@@ -122,5 +113,30 @@ function onWindowResize() {
   renderer.setSize( viewWidth, viewHeight );
 }
 
+// Dot management
+function addDot(x, y) {
 
+  // Create geometry
+  let geometry = new BufferGeometry();
 
+  let vertices = [];
+
+  vertices[0] = x;
+  vertices[1] = y;
+  vertices[2] = 0;
+
+  geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ));
+
+  const points = new Points( geometry, material );
+  scene.add( points );
+
+}
+
+function createScene() {
+    scene = new Scene();
+    scene.background = new Color( 0x223344 );
+}
+
+function clearScene() {
+  createScene();
+}
