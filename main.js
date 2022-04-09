@@ -1,29 +1,15 @@
 // Imports
-import { BufferAttribute } from 'three';
-import { 
-  BufferGeometry, 
-  Color, 
-  Float32BufferAttribute, 
-  FogExp2, 
-  MathUtils, 
-  OrthographicCamera, 
-  PerspectiveCamera, 
-  Points, 
-  PointsMaterial, 
-  Scene,
-  TextureLoader,
-  Vector3, 
-  VertexColors, 
-  WebGLRenderer 
-} from 'three';
+import * as THREE from 'three';
+import * as d3 from 'd3';
 
 let camera, scene, renderer, material;
+let view, zoom;
 let mouseX = 0, mouseY = 0;
 
 let viewWidth = window.innerWidth;
 let viewHeight = window.innerHeight;
 
-const sprite= new TextureLoader().load(
+const sprite= new THREE.TextureLoader().load(
   "https://blog.fastforwardlabs.com/images/2018/02/circle_aa-1518730700478.png"
 )
 
@@ -34,19 +20,20 @@ animate();
 function init() {
 
   // Create camera
-  camera = new OrthographicCamera(
+  camera = new THREE.OrthographicCamera(
     viewWidth / -2, viewWidth / 2,
     viewHeight / -2, viewHeight / 2,
     5, 5000
   );
   camera.position.z = 1000;
 
-  createScene()
+  // Create scene
+  createScene();
 
   // Load material
-  material = new PointsMaterial( { 
+  material = new THREE.PointsMaterial( { 
     color: 0xAAAAAA,
-    size: 20,
+    size: 60,
     sizeAttenuation: false,
     map: sprite,
     transparent: true,
@@ -55,7 +42,7 @@ function init() {
   material.color.setHSL(1.0, 0.3, 0.7);
 
   // Create renderer
-  renderer = new WebGLRenderer();
+  renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( viewWidth, viewHeight );
   document.body.appendChild(renderer.domElement);
@@ -88,6 +75,15 @@ function render() {
   // const h = ( 360 * ( 1.0 + time) % 360) / 36;
   // material.color.setHSL( h, 0.5, 0.5);
 
+  scene.children.forEach(dot => {
+    const [lastX, lastY] = [dot.position.x, dot.position.y];
+    dot.position.x += 1 * (Math.random() - 0.5);
+    dot.position.y += 1 * (Math.random() - 0.5);
+
+    // material.size = 60 + 10 * (dot.position.x - lastX);
+
+  })
+
   renderer.render( scene, camera );
 }
 
@@ -117,7 +113,7 @@ function onWindowResize() {
 function addDot(x, y) {
 
   // Create geometry
-  let geometry = new BufferGeometry();
+  let geometry = new THREE.BufferGeometry();
 
   let vertices = [];
 
@@ -125,16 +121,17 @@ function addDot(x, y) {
   vertices[1] = y;
   vertices[2] = 0;
 
-  geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ));
+  geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ));
 
-  const points = new Points( geometry, material );
+  const points = new THREE.Points( geometry, material );
   scene.add( points );
 
 }
 
+// Scene management
 function createScene() {
-    scene = new Scene();
-    scene.background = new Color( 0x223344 );
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0x223344 );
 }
 
 function clearScene() {
